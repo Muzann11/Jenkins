@@ -16,35 +16,35 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t ${IMAGE_NAME}:${TAG} .'
+                sh "docker build -t ${env.IMAGE_NAME}:${env.TAG} ."
             }
         }
 
         stage('Update Kubernetes Manifests') {
             steps {
-                sh '''
-                    sed -i "s|image:.*php-web-app.*|image: ${IMAGE_NAME}:${TAG}|" kubernetes/deployment.yaml
+                sh """
+                    sed -i "s|image:.*php-web-app.*|image: ${env.IMAGE_NAME}:${env.TAG}|" kubernetes/deployment.yaml
                     sed -i "s|imagePullPolicy:.*|imagePullPolicy: Never|" kubernetes/deployment.yaml
-                '''
+                """
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                sh '''
-			kubectl apply --insecure-skip-tls-verify -f kubernetes/mysql-deployment.yaml
-			kubectl apply --insecure-skip-tls-verify -f kubernetes/nginx-config.yaml
-			kubectl apply --insecure-skip-tls-verify -f kubernetes/deployment.yaml
-			kubectl apply --insecure-skip-tls-verify -f kubernetes/service.yaml
-
-                '''
+                sh 'kubectl config current-context' // optional check
+                sh """
+                    kubectl apply --insecure-skip-tls-verify -f kubernetes/mysql-deployment.yaml
+                    kubectl apply --insecure-skip-tls-verify -f kubernetes/nginx-config.yaml
+                    kubectl apply --insecure-skip-tls-verify -f kubernetes/deployment.yaml
+                    kubectl apply --insecure-skip-tls-verify -f kubernetes/service.yaml
+                """
             }
         }
     }
 
     post {
         success {
-            echo "✅ Deployment sukses dengan image tag ${TAG}"
+            echo "✅ Deployment sukses dengan image tag ${env.TAG}"
         }
         failure {
             echo "❌ Deployment gagal"
