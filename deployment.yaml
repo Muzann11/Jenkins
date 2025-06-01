@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: php-fpm
-        image: php-web-app:1
+        image: php-web-app:4
         imagePullPolicy: Never
         ports:
         - containerPort: 9000
